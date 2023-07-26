@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp
 public class Drive extends LinearOpMode {
@@ -16,12 +17,16 @@ public class Drive extends LinearOpMode {
         DcMotor bLeft = hardwareMap.dcMotor.get("bLeft");
         DcMotor bRight = hardwareMap.dcMotor.get("bRight");
         DcMotor arm = hardwareMap.dcMotor.get("arm");
+        Servo servo1 = hardwareMap.servo.get("servo1");
+        Servo servo2 = hardwareMap.servo.get("servo2");
 
         fLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         fRight.setDirection(DcMotorSimple.Direction.FORWARD);
         bLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         bRight.setDirection(DcMotorSimple.Direction.FORWARD);
         arm.setDirection(DcMotorSimple.Direction.FORWARD);
+        double servoOnePos = 0.5;
+        double servoTwoPos = 0.5;
 
         waitForStart();
 
@@ -31,6 +36,7 @@ public class Drive extends LinearOpMode {
             double powerTurn = gamepad1.right_stick_x / 2;
             double mecanumMovement = gamepad1.left_stick_x / 2;
             double armMovement = gamepad1.right_stick_y;
+
 
             double fLeftPower = (powerForward + powerTurn + mecanumMovement);
             double fRightPower = (powerForward - powerTurn - mecanumMovement);
@@ -48,11 +54,24 @@ public class Drive extends LinearOpMode {
                 bRightPower /= scale;
             }
 
+            if (gamepad1.left_bumper == true) {
+                servoOnePos += 0.025;
+                servoTwoPos -= 0.025;
+            }
+
+            if (gamepad1.right_bumper == true) {
+                servoOnePos -= 0.025;
+                servoTwoPos += 0.025;
+            }
+
+
             fLeft.setPower(fLeftPower);
             fRight.setPower(fRightPower);
             bLeft.setPower(bLeftPower);
             bRight.setPower(bRightPower);
             arm.setPower(armMovement);
+            servo1.setPosition(servoOnePos);
+            servo2.setPosition(servoTwoPos);
 
         }
     }
