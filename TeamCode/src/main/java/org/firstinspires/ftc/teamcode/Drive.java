@@ -15,11 +15,13 @@ public class Drive extends LinearOpMode {
         DcMotor fRight = hardwareMap.dcMotor.get("fRight");
         DcMotor bLeft = hardwareMap.dcMotor.get("bLeft");
         DcMotor bRight = hardwareMap.dcMotor.get("bRight");
+        DcMotor arm = hardwareMap.dcMotor.get("arm");
 
         fLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         fRight.setDirection(DcMotorSimple.Direction.FORWARD);
         bLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         bRight.setDirection(DcMotorSimple.Direction.FORWARD);
+        arm.setDirection(DcMotorSimple.Direction.FORWARD);
 
         waitForStart();
 
@@ -28,6 +30,7 @@ public class Drive extends LinearOpMode {
             double powerForward = -gamepad1.left_stick_y / 2;
             double powerTurn = gamepad1.right_stick_x / 2;
             double mecanumMovement = gamepad1.left_stick_x / 2;
+            double armMovement = gamepad1.right_stick_y;
 
             double fLeftPower = (powerForward + powerTurn + mecanumMovement);
             double fRightPower = (powerForward - powerTurn - mecanumMovement);
@@ -49,6 +52,7 @@ public class Drive extends LinearOpMode {
             fRight.setPower(fRightPower);
             bLeft.setPower(bLeftPower);
             bRight.setPower(bRightPower);
+            arm.setPower(armMovement);
 
         }
     }
