@@ -4,13 +4,20 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp
 public class Auto extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+        encoderMove(12, 0.1);
+    }
 
+    private static final double ticksPerInch = (537.7 / 1.4) / 11.87373601322835;
+    private static final double P_CONSTANT = 0.005;
+
+    public void encoderMove(int inches, double power) {
         DcMotor fLeft = hardwareMap.dcMotor.get("fLeft");
         DcMotor fRight = hardwareMap.dcMotor.get("fRight");
         DcMotor bLeft = hardwareMap.dcMotor.get("bLeft");
@@ -32,29 +39,36 @@ public class Auto extends LinearOpMode {
         waitForStart();
 
         int ticks = fLeft.getCurrentPosition();
-        double ticksPerInch = (537.7/1.4) / 11.87373601322835;
+        double error = (ticksPerInch * 12) - ticks;
 
         while (opModeIsActive()) {
 
             telemetry.addLine(String.valueOf(ticks));
-            telemetry.addLine(String.valueOf(ticksPerInch));
+            telemetry.addLine(String.valueOf(ticksPerInch * 12));
             telemetry.update();
 
-            if (ticks < (ticksPerInch*12)) {
-                fLeft.setPower(0.25);
-                fRight.setPower(0.25);
-                bLeft.setPower(0.25);
-                bRight.setPower(0.25);
-            } else if (ticks >= (ticksPerInch*12)){
-                fLeft.setPower(0);
-                fRight.setPower(0);
-                bLeft.setPower(0);
-                bRight.setPower(0);
-            }
+            fLeft.setPower(P_CONSTANT*error);
+            fRight.setPower(P_CONSTANT*error);
+            bLeft.setPower(P_CONSTANT*error);
+            bRight.setPower(P_CONSTANT*error);
+
 
             ticks = fLeft.getCurrentPosition();
+            error = (ticksPerInch * 12) - ticks;
 
         }
 
+    }
+
+    public void wait(int seconds) {
+        ElapsedTime elapsedTime = new ElapsedTime();
+
+        while (true) {
+
+            if (elapsedTime.milliseconds() >= seconds*1000) {
+                break;
+            }
+
+        }
     }
 }
