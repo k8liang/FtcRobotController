@@ -9,6 +9,11 @@ import com.qualcomm.robotcore.hardware.Servo;
 @TeleOp
 public class Drive extends LinearOpMode {
 
+    public static final double SERVO_MOVE_SPEED = 0.025;
+    public static final double SERVO_ONE_POS = 0.5;
+    public static final double SERVO_TWO_POS = 0.5;
+    public static final double POWER_SCALE = 3;
+
     @Override
     public void runOpMode() throws InterruptedException {
 
@@ -16,29 +21,26 @@ public class Drive extends LinearOpMode {
         DcMotor fRight = hardwareMap.dcMotor.get("fRight");
         DcMotor bLeft = hardwareMap.dcMotor.get("bLeft");
         DcMotor bRight = hardwareMap.dcMotor.get("bRight");
-        //DcMotor arm = hardwareMap.dcMotor.get("arm");
+        DcMotor arm = hardwareMap.dcMotor.get("arm");
         Servo servo1 = hardwareMap.servo.get("servo1");
         Servo servo2 = hardwareMap.servo.get("servo2");
-
-        fLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        fLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         fLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         fRight.setDirection(DcMotorSimple.Direction.FORWARD);
         bLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         bRight.setDirection(DcMotorSimple.Direction.FORWARD);
-        //arm.setDirection(DcMotorSimple.Direction.FORWARD);
-        double servoOnePos = 0.5;
-        double servoTwoPos = 0.5;
+        arm.setDirection(DcMotorSimple.Direction.FORWARD);
+        double servoOnePos = SERVO_ONE_POS;
+        double servoTwoPos = SERVO_TWO_POS;
 
         waitForStart();
 
         while (opModeIsActive()) {
 
-            double powerForward = -gamepad1.left_stick_y / 3;
-            double powerTurn = gamepad1.right_stick_x / 3;
-            double mecanumMovement = gamepad1.left_stick_x / 3;
-            //double armMovement = gamepad1.right_stick_x - 0.3909;
+            double powerForward = -gamepad1.left_stick_y / POWER_SCALE;
+            double powerTurn = gamepad1.right_stick_x / POWER_SCALE;
+            double mecanumMovement = gamepad1.left_stick_x / POWER_SCALE;
+            double armMovement = gamepad1.right_stick_y;
 
 
             double fLeftPower = (powerForward + powerTurn + mecanumMovement);
@@ -48,23 +50,22 @@ public class Drive extends LinearOpMode {
 
             double maxPower = maxAbsPower(fLeftPower,fRightPower,bLeftPower,bRightPower);
 
-            if (Math.abs(maxPower) > 1) {
-                double scale = Math.abs(maxPower);
+            if (maxPower > 1) {
 
-                fLeftPower /= scale;
-                fRightPower /= scale;
-                bLeftPower /= scale;
-                bRightPower /= scale;
+                fLeftPower /= maxPower;
+                fRightPower /= maxPower;
+                bLeftPower /= maxPower;
+                bRightPower /= maxPower;
             }
 
             if (gamepad1.left_bumper == true) {
-                servoOnePos += 0.025;
-                servoTwoPos -= 0.025;
+                servoOnePos += SERVO_MOVE_SPEED;
+                servoTwoPos -= SERVO_MOVE_SPEED;
             }
 
             if (gamepad1.right_bumper == true) {
-                servoOnePos -= 0.025;
-                servoTwoPos += 0.025;
+                servoOnePos -= SERVO_MOVE_SPEED;
+                servoTwoPos += SERVO_MOVE_SPEED;
             }
 
 
@@ -72,13 +73,14 @@ public class Drive extends LinearOpMode {
             fRight.setPower(fRightPower);
             bLeft.setPower(bLeftPower);
             bRight.setPower(bRightPower);
-            //arm.setPower(armMovement);
+            arm.setPower(armMovement);
             servo1.setPosition(servoOnePos);
             servo2.setPosition(servoTwoPos);
 
             //telemetry.addLine(String.valueOf(gamepad1.right_stick_y));
             //telemetry.addLine(String.valueOf(armMovement));
             //telemetry.update();
+
         }
     }
 
@@ -92,7 +94,7 @@ public class Drive extends LinearOpMode {
             }
         }
 
-        return max;
+        return Math.abs(max);
 
     }
 }
